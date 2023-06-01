@@ -1,4 +1,4 @@
-package fr.it_aka.poker.business;
+package fr.it_akademy.poker.business;
 
 public class Carte implements Comparable<Carte> {
 
@@ -29,11 +29,6 @@ public class Carte implements Comparable<Carte> {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return nom + " de " + couleur.getNom();
-	}
-
 	public int getValeur() {
 		return valeur;
 	}
@@ -42,30 +37,39 @@ public class Carte implements Comparable<Carte> {
 		this.valeur = valeur;
 	}
 
+
 	public String getNom() {
 		return nom;
 	}
+
 
 	public void setNom(String nom) {
 		this.nom = nom;
 	}
 
+
 	public Couleur getCouleur() {
 		return couleur;
 	}
+
 
 	public void setCouleur(Couleur couleur) {
 		this.couleur = couleur;
 	}
 
 	@Override
+	public String toString() {
+		return nom + " de " + couleur.getNom();
+	}
+
+	@Override
 	public int compareTo(Carte autreCarte) {
-		
-		// d'abord on trie les cartes sur la couleur
-		if (getCouleur().getNom().equals(autreCarte.getCouleur().getNom())) {
-			// les cartes sont de meme couleurs on s'interesse à la valeur des cartess
+		// d'abord on trie les cartes sur la couleur puis sur la valeur
+		if (getCouleur().equals(autreCarte.getCouleur())) {
+			// les cartes sont de même couleur, on s'intéresse à la valeur des cartes
 			return Integer.valueOf(getValeur()).compareTo(autreCarte.getValeur());
 		}
-		return getCouleur().getNom().compareTo(autreCarte.getCouleur().getNom());
+		return getCouleur().compareTo(autreCarte.getCouleur());
 	}
+		
 }

@@ -1,4 +1,4 @@
-package fr.it_aka.poker.business;
+package fr.it_akademy.poker.business;
 
 /**
  * Cette classe représente le concept de couleur (coeur, pique, etc.)
@@ -6,7 +6,7 @@ package fr.it_aka.poker.business;
  * @author admin
  *
  */
-public class Couleur {
+public class Couleur implements Comparable<Couleur> {
 
 	// Attributs (glaçage)
 	private String nom;
@@ -47,6 +47,11 @@ public class Couleur {
 		return "Couleur [nom=" + nom + "]";
 	}
 
+
+	@Override
+	public int compareTo(Couleur autreCouleur) {
+		return getNom().compareTo(autreCouleur.getNom());
+	}
 	
 	
 }

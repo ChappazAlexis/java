@@ -1,24 +1,19 @@
-package fr.it_aka.poker;
+package fr.it_akademy.poker;
 
+import fr.it_akademy.poker.business.*;
+import fr.it_akademy.poker.util.ComparateurDeJoueursSurPseudo;
+
+import java.util.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
-
-import fr.it_aka.poker.business.Carte;
-import fr.it_aka.poker.business.Combinaison;
-import fr.it_aka.poker.business.Couleur;
-import fr.it_aka.poker.business.Joueur;
-import fr.it_aka.poker.business.Ville;
+import java.time.LocalDate;
 
 public class App {
-
+	
 	// On déclare une liste de couleurs
 	// Cette liste va contenir des objets de type Couleur -> List<Couleur>
 	// une collection est soit une liste (List) soit un ensemble (Set)
@@ -26,123 +21,98 @@ public class App {
 	private static List<Carte> cartes = new ArrayList<>();
 	private static List<Joueur> joueurs = new ArrayList<>();
 	private static List<Ville> villes = new ArrayList<>();
+	private static Scanner scanner = new Scanner(System.in);
 	
-    
-    // la méthode main rend le projet exécutable
-    public static void main(String[] args) {
-    	System.out.println("Nombre de lignes lues : " + importerVilles());
-		System.out.println(villes.get(0));
-		System.out.println(villes.size());
-        constituerJeu();
-        melangerJeu();
-        afficherJeu();
-        ajouterJoueurs();
-        ajouterJoueur();
-        distribuerCartes();
-        importerVilles();
+	// la méthode main rend le projet exécutable
+	public static void main(String[] args) {
+		
+//		StringBuilder stringBuilder = new StringBuilder();
+//		stringBuilder.append(false);
+//		stringBuilder.append('a').append(4).append("Coucou");
+//		
+//		String chaine = stringBuilder.toString();
+//		System.out.println(chaine);
+		
+		System.out.println("Nombre de lignes lues : " + importerVilles());
+		
+		constituerJeu();
+		melangerJeu();
+		ajouterJoueurs();
+		ajouterJoueur();
+		afficherJeu();
+		trierJoueurs();
+		distribuerCartes();
 
+		for (Joueur joueur : joueurs) {
+			System.out.println(joueur);
+			System.out.println(analyserMain(joueur));
+		}
 
-        
-        for (Joueur joueur : joueurs) {
-           System.out.println(joueur);
-           System.out.println(analyserMain(joueur));
-        }
-        Collections.sort(cartes);
-    }
+		Collections.sort(cartes);
+		System.out.println(cartes);
+	}
 
+	private static void trierJoueurs() {
+		Collections.sort(joueurs, new ComparateurDeJoueursSurPseudo());
+	}
+
+	/**
+	 * Cette méthode renvoie la combinaison obtenue par le joueur donné en paramètre
+	 * 
+	 * @param joueur
+	 * @return
+	 */
 	private static Combinaison analyserMain(Joueur joueur) {
-		// Recuperer la valeur de la main carte par carte , voir si y'a des
-		// 
-		// TODO Si similitude faire switch en focntion des resemblance des valeurs
-		// afficher enumCombinaison sinon carte haute
-
-		boolean estDoublePair = false;
-		boolean estPair = false;
-		boolean estBrelan = false;
-		boolean estSuite = false;
+		
 		boolean estMemeCouleur = false;
-		boolean estFull = false;
-		boolean estCarre = false;
-		boolean estQuinte = false;
-		boolean estQuinteRoyale = false;
-
-		int[] occurences = new int[15];
-		int[] occurencesParCouleurs = new int[4];
-
+		
+		// comment déterminer qu'un joueur a obtenu deux cartes de même valeur (une paire) ?
+		// pourquoi ne pas créer un tableau d'occurrences ?
+		// si j'ai une paire de 5, dans ce tableau d'occurrences, on aura : 
+		// occurrences[5]=2
+		// si j'ai un brelan de 7, dans ce tableau d'occurrences, on aura : 
+		// occurrences[7]=3
+		int[] occurrences = new int[15]; // Tableau de 15 cases, les première et deuxième cases ne vont pas servir
+		
+		int a = 1;
+		int b = 2;
+		int c = 3;
+		
+		// && : et alors
+		// si a>b et alors b>c
+		if (a>b && b>c) {
+			System.out.println("ok");
+		}
+		
+		// Si on a une couleur en coeur : occurrencesParCouleur[0]=5
+		int[] occurrencesParCouleur = new int[4];
+		
+		// On parcourt les cartes qui sont dans la main du joueur
 		for (Carte carte : joueur.getMain()) {
-			occurences[carte.getValeur()]++;
+			occurrences[carte.getValeur()]++;
 		}
-		for (int i = 0; i < occurences.length; i++) {
-			// pair et double pair
-			if (estPair == false && occurences[i] == 2) {
-				estPair = true;
-			} else if (occurences[i] == 2 && estPair == true) {
-				estPair = false;
-				estDoublePair = true;
-			}
 
-			// brelan
-			if (occurences[i] == 3) {
-				estBrelan = true;
-			}
-
-			// suite
-
-			// couleur
-			for (int v = 0; v < occurencesParCouleurs.length; v++) {
-				// System.out.print(occurencesParCouleurs[v]);
-
-				if (occurencesParCouleurs[v] == 5) {
-					estMemeCouleur = true;
-				}
-
-				// full
-				if (estBrelan == true && estPair == true) {
-					estBrelan = false;
-					estPair = false;
-					estFull = true;
-				}
-
-				// carre
-				if (occurences[i] == 4) {
-					estCarre = true;
-				}
-
-				// quinte flush
-				if (occurences[14] == 1 && occurences[13] == 1 && occurences[12] == 1 && occurences[11] == 1
-						&& occurences[10] == 1) {
-					estQuinte = true;
-				}
-
-				// royal quinte flush
-				if (estQuinte == true && estMemeCouleur == true) {
-					estQuinte = false;
-					estMemeCouleur = false;
-					estQuinteRoyale = true;
-				}
-
-				// System.out.print(occurences[i]);
-			}
-
-			// return le résultat
-			if (estPair == true) {
-				return Combinaison.PAIRE;
-			} else if (estDoublePair == true) {
-				return Combinaison.DOUBLE_PAIR;
-			} else if (estBrelan == true) {
-				return Combinaison.BRELAN;
-			} else if (estSuite == true) {
-				return Combinaison.SUITE;
-			} else if (estCarre == true) {
-				return Combinaison.CARRE;
-			} else if (estMemeCouleur == true) {
-				return Combinaison.COULEUR;
-			} else if (estQuinte == true) {
-				return Combinaison.QUINTE_FLUSH;
-			} else if (estQuinteRoyale == true) {
-				return Combinaison.QUINTE_FLUSH_ROYALE;
-			}
+		for (int i = 0; i < occurrences.length; i++) {
+			System.out.print(occurrences[i]);
 		}
+
+		System.out.println();
+		
+		// Nico : si le tableau contient 4 dans une de cases x
+		// return Combinaison.CARRE
+		
+		// Michel : détection d'un FULL x
+		
+		// Pauline : détection d'une SUITE
+		
+		// Antoine : détection d'une QUINTE_FLUSH x
+		
+		// Alexis : détection d'une DOUBLE_PAIRE x
+		
+		// Corentin : détection d'une COULEUR x
+		
+		// Johan : détection d'une QUINTE_FLUSH_ROYALE x
+		
 		return Combinaison.CARTE_HAUTE;
 	}
 
@@ -152,39 +122,11 @@ public class App {
 				// On remet au joueur la carte au sommet de la pile de cartes
 				// joueur.getMain() : renvoie la main du joueur
 				joueur.getMain().add(cartes.remove(0));
-				
 			}
 		}
 	}
 
-	private static void ajouterJoueur() {
-		Scanner scanner = new Scanner(System.in);
-		
-        System.out.print("Veuillez saisir votre pseudo : ");
-        String pseudo = scanner.nextLine();
-        // On instancie un objet de type Joueur
-        Joueur joueur = new Joueur(pseudo);
-        System.out.print("Veuillez saisir un code postal : ");
-        String codePostal = scanner.nextLine();
-        Collections.sort(villes);
-        for (Ville ville : villes) {
-            if (ville.getCodePostal().equals(codePostal)) {
-                
-                System.out.println(ville.getId() + ": " + ville.getNom());
-            }
-        }
-        System.out.print("Entrez l'id de votre ville : ");
-        Long idVille = scanner.nextLong();
-        for (Ville ville : villes) {
-            if (ville.getId().equals(idVille)) {
-                joueur.setVille(ville);
-            }
-        }
-        joueurs.add(joueur);
-    }
-	
 	private static void afficherJeu() {
-		
 		System.out.println(cartes);
 	}
 
@@ -215,16 +157,79 @@ public class App {
 		Collections.shuffle(cartes);
 	}
 	
+	/**
+	 * FX demande que la méthode ait un nom qui débute par un verbe à l'infinitif
+	 */
+	private static void ajouterJoueur() {
+		
+		// on demander à l'utilisateur de saisir son pseudo puis un code postal
+		// on affiche toutes les villes liées à ce code postal
+		// on demande à l'utilisateur de saisir l'id de sa ville
+		// on instancie un nouveau joueur en utilisant l'id de la ville et le pseudo saisi
+		// on ajoute le nouveau joueur dans la liste des joueurs
+		
+		System.out.print("Veuillez saisir votre pseudo : ");
+		String pseudo = scanner.nextLine();
+		// On instancie un objet de type Joueur
+		Joueur joueur = new Joueur(pseudo);
+		System.out.print("Veuillez saisir un code postal : ");
+		String codePostal = scanner.nextLine();
+		
+		List<Ville> villesCorrespondantes = new ArrayList<>();
+		
+		for (Ville ville : villes) {
+			if (ville.getCodePostal().equals(codePostal)) {
+				villesCorrespondantes.add(ville);
+			}
+		}
+		Collections.sort(villesCorrespondantes);
+		
+		for (Ville ville : villesCorrespondantes) {
+			System.out.println(ville.getId() + " : " + ville.getNom() + " (" + ville.getLatitude() + ")");
+		}
+		
+		System.out.print("Entrez l'id de votre ville : ");
+		Long idVille = scanner.nextLong();
+		scanner.close();
+		
+		for (Ville ville : villes) {
+			if (ville.getId().equals(idVille)) {
+				joueur.setVille(ville);
+			}
+		}
+		try {
+			Joueur clone = joueur.clone();
+			joueurs.add(clone);
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		joueurs.add(joueur);
+	}
+	
 	private static void ajouterJoueurs() {
 		Joueur pauline = new Joueur("Pauline");
 		joueurs.add(pauline);
 		joueurs.add(new Joueur("Alexis"));
 		joueurs.add(new Joueur("Antoine"));
 		joueurs.add(new Joueur("Corentin"));
-		joueurs.add(new Joueur("Fx"));
 		joueurs.add(new Joueur("Johan"));
 		joueurs.add(new Joueur("Michel"));
+		Joueur nicolas = new Joueur("Nicolas");
+		Joueur nicolas2 = nicolas;
+		System.out.println(nicolas.hashCode());
+		System.out.println(nicolas2.hashCode());
+		try {
+			Joueur cloneDeNicolas = nicolas.clone();
+			System.out.println(cloneDeNicolas.hashCode());
+			joueurs.add(cloneDeNicolas);
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		joueurs.add(new Joueur("Nicolas"));
+		
 	}
 	
 	private static int importerVilles() {
@@ -288,6 +293,5 @@ public class App {
         }
 
         return compteur;
-
 	}
 }
